@@ -45,6 +45,10 @@ See ["Caching dependencies to speed up workflows"](https://docs.github.com/en/ac
 
 ## What's New
 
+### v4
+
+* Updated to node 20
+
 ### v3
 
 * Added support for caching in GHES 3.5+.
@@ -80,7 +84,7 @@ If you are using a `self-hosted` Windows runner, `GNU tar` and `zstd` are requir
 
 * `key` - An explicit key for a cache entry. See [creating a cache key](#creating-a-cache-key).
 * `path` - A list of files, directories, and wildcard patterns to cache and restore. See [`@actions/glob`](https://github.com/actions/toolkit/tree/main/packages/glob) for supported patterns.
-* `restore-keys` - An ordered list of prefix-matched keys to use for restoring stale cache if no cache hit occurred for key.
+* `restore-keys` - An ordered multiline string listing the prefix-matched keys, that are used for restoring stale cache if no cache hit occurred for key.
 * `enableCrossOsArchive` - An optional boolean when enabled, allows Windows runners to save or restore caches that can be restored or saved respectively on other platforms. Default: `false`
 * `fail-on-cache-miss` - Fail the workflow if cache entry is not found. Default: `false`
 * `lookup-only` - If true, only checks if cache entry exists and skips download. Does not change save cache behavior. Default: `false`
@@ -91,9 +95,9 @@ If you are using a `self-hosted` Windows runner, `GNU tar` and `zstd` are requir
 
 ### Outputs
 
-* `cache-hit` - A boolean value to indicate an exact match was found for the key.
-
-    > **Note** `cache-hit` will only be set to `true` when a cache hit occurs for the exact `key` match. For a partial key match via `restore-keys` or a cache miss, it will be set to `false`.
+* `cache-hit` - A string value to indicate an exact match was found for the key.
+  * If there's a cache hit, this will be 'true' or 'false' to indicate if there's an exact match for `key`.
+  * If there's a cache miss, this will be an empty string.
 
 See [Skipping steps based on cache-hit](#skipping-steps-based-on-cache-hit) for info on using this output
 
@@ -117,11 +121,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Cache Primes
       id: cache-primes
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: prime-numbers
         key: ${{ runner.os }}-primes
@@ -148,11 +152,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Restore cached Primes
       id: cache-primes-restore
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: |
           path/to/dependencies
@@ -163,7 +167,7 @@ jobs:
     .
     - name: Save Primes
       id: cache-primes-save
-      uses: actions/cache/save@v3
+      uses: actions/cache/save@v4
       with:
         path: |
           path/to/dependencies
@@ -184,6 +188,7 @@ Every programming language and framework has its own way of caching.
 
 See [Examples](examples.md) for a list of `actions/cache` implementations for use with:
 
+* [Bun](./examples.md#bun)
 * [C# - NuGet](./examples.md#c---nuget)
 * [Clojure - Lein Deps](./examples.md#clojure---lein-deps)
 * [D - DUB](./examples.md#d---dub)
@@ -217,7 +222,7 @@ A cache key can include any of the contexts, functions, literals, and operators 
 For example, using the [`hashFiles`](https://docs.github.com/en/actions/learn-github-actions/expressions#hashfiles) function allows you to create a new cache when dependencies change.
 
 ```yaml
-  - uses: actions/cache@v3
+  - uses: actions/cache@v4
     with:
       path: |
         path/to/dependencies
@@ -235,7 +240,7 @@ Additionally, you can use arbitrary command output in a cache key, such as a dat
       echo "date=$(/bin/date -u "+%Y%m%d")" >> $GITHUB_OUTPUT
     shell: bash
 
-  - uses: actions/cache@v3
+  - uses: actions/cache@v4
     with:
       path: path/to/dependencies
       key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('**/lockfiles') }}
@@ -257,9 +262,9 @@ Example:
 
 ```yaml
 steps:
-  - uses: actions/checkout@v3
+  - uses: actions/checkout@v4
 
-  - uses: actions/cache@v3
+  - uses: actions/cache@v4
     id: cache
     with:
       path: path/to/dependencies
@@ -287,11 +292,11 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Cache Primes
         id: cache-primes
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: prime-numbers
           key: primes
@@ -302,7 +307,7 @@ jobs:
 
       - name: Cache Numbers
         id: cache-numbers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: numbers
           key: primes
@@ -314,11 +319,11 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Cache Primes
         id: cache-primes
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: prime-numbers
           key: primes
